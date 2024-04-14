@@ -32,3 +32,24 @@ void MainWindow::on_nextButton_clicked()
     }
 }
 
+
+void MainWindow::on_onceRadioButton_clicked()
+{
+    ui->weeklyFrame->hide();
+    ui->dailyFrame->hide();
+}
+
+
+void MainWindow::on_dailyRadioButton_clicked()
+{
+    ui->weeklyFrame->hide();
+    ui->dailyFrame->show();
+}
+
+
+void MainWindow::on_weeklyRadioButton_clicked()
+{
+    ui->weeklyFrame->show();
+    ui->dailyFrame->hide();
+}
+

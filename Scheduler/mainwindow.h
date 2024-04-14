@@ -22,6 +22,12 @@ private slots:
 
     void on_nextButton_clicked();
 
+    void on_onceRadioButton_clicked();
+
+    void on_dailyRadioButton_clicked();
+
+    void on_weeklyRadioButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

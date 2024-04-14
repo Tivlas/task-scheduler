@@ -24,5 +24,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     pages* taskCreationPages;
+
+    void showTasks();
 };
 #endif // MAINWINDOW_H

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "src/pages/pages.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,17 +19,10 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_prevButton_clicked();
-
-    void on_nextButton_clicked();
-
-    void on_onceRadioButton_clicked();
-
-    void on_dailyRadioButton_clicked();
-
-    void on_weeklyRadioButton_clicked();
+    void on_createButton_clicked();
 
 private:
     Ui::MainWindow *ui;
+    pages* taskCreationPages;
 };
 #endif // MAINWINDOW_H

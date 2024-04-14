@@ -26,6 +26,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Scheduler
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        src/pages/pages.h src/pages/pages.cpp src/pages/pages.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Scheduler APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

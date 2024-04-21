@@ -3,6 +3,14 @@
 
 #include <QWidget>
 #include <QDialog>
+#include <QMessageBox>
+#include <windows.h>
+#include <comdef.h>
+#include <wincred.h>
+#include <taskschd.h>
+#pragma comment(lib, "taskschd.lib")
+#pragma comment(lib, "comsupp.lib")
+#pragma comment(lib, "credui.lib")
 
 namespace Ui {
 class pages;
@@ -40,7 +48,28 @@ signals:
     void doneSignal();
 
 private:
+    enum ErrCode {
+        Ok,
+        Err
+    };
+
     Ui::pages *ui;
+    QString actionPath;
+
+    ErrCode addOnceTask();
+    ErrCode addDailyTask();
+    ErrCode addWeeklyTask();
+
+    QString getTaskName();
+    QString getTaskDescription();
+    QString getActionPath();
+    QString getActionArgs();
+    QDateTime getStartDateTime();
+    void warningMsgBox(QString title, QString text);
+    void errorMsgBox(QString title, QString text);
+    void okMsgBox(QString title, QString text);
+
+
 };
 
 #endif // PAGES_H

@@ -12,6 +12,14 @@
 #pragma comment(lib, "comsupp.lib")
 #pragma comment(lib, "credui.lib")
 
+#define SUNDAY 1
+#define MONDAY 2
+#define TUESDAY 4
+#define WEDNESDAY 8
+#define THURSDAY 16
+#define FRIDAY 32
+#define SATURDAY 64
+
 namespace Ui {
 class pages;
 }

@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QStackedWidget" name="createPages">
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="taskNamePage">
       <layout class="QGridLayout" name="gridLayout_2">
@@ -374,6 +374,9 @@
         <widget class="QLineEdit" name="actionArgsLineEdit">
          <property name="maxLength">
           <number>500</number>
+         </property>
+         <property name="placeholderText">
+          <string>Необязательные аргументы</string>
          </property>
         </widget>
        </item>

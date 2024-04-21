@@ -1,11 +1,6 @@
 #define _WIN32_DCOM
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include <windows.h>
-#include <taskschd.h>
-#include <comdef.h>
-
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,6 +18,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_createButton_clicked()
 {
+    delete taskCreationPages;
+    taskCreationPages = new pages();
     taskCreationPages->exec();
 }
 
@@ -31,24 +28,6 @@ void MainWindow::showTasks() {
     if( FAILED(hr) )
     {
         qDebug() << "CoInitializeEx failed " << hr;
-        return;
-    }
-
-    hr = CoInitializeSecurity(
-        NULL,
-        -1,
-        NULL,
-        NULL,
-        RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
-        RPC_C_IMP_LEVEL_IMPERSONATE,
-        NULL,
-        0,
-        NULL);
-
-    if( FAILED(hr) )
-    {
-        qDebug() << "\nCoInitializeSecurity failed";
-        CoUninitialize();
         return;
     }
 
@@ -182,3 +161,10 @@ void MainWindow::showTasks() {
     CoUninitialize();
     return;
 }
+
+void MainWindow::on_refreshButton_clicked()
+{
+    ui->taskListWidget->clear();
+    showTasks();
+}
+

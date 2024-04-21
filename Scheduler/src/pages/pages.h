@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QDialog>
 #include <QMessageBox>
+#include <QFileDialog>
 #include <windows.h>
 #include <comdef.h>
 #include <wincred.h>
@@ -19,8 +20,7 @@
 #define THURSDAY 16
 #define FRIDAY 32
 #define SATURDAY 64
-
-std::wstring AUTHOR_NAME = L"CUSTOM_AUTHOR";
+#define AUTHOR_NAME L"CUSTOM_AUTHOR"
 
 namespace Ui {
 class pages;

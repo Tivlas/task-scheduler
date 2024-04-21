@@ -70,8 +70,16 @@ void pages::on_addTaskButton_clicked()
 
 pages::ErrCode pages::addDailyTask() {
     QString name = getTaskName();
+    if (name == "") {
+        errorMsgBox("Ошибка", "Пустое имя задачи");
+        return pages::Err;
+    }
     QString description = getTaskDescription();
     QString actionPath = getActionPath();
+    if (actionPath == "") {
+        errorMsgBox("Ошибка", "Пустой путь к исполняемому файлу");
+        return pages::Err;
+    }
     QString actionArgs = getActionArgs();
     QDateTime startDateTime = getStartDateTime();
 
@@ -174,7 +182,7 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME.c_str() ) );
+    hr = pRegInfo->put_Author(_bstr_t(AUTHOR_NAME));
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put author info";
@@ -397,8 +405,16 @@ pages::ErrCode pages::addDailyTask() {
 
 pages::ErrCode pages::addSpecificTimeTask() {
     QString name = getTaskName();
+    if (name == "") {
+        errorMsgBox("Ошибка", "Пустое имя задачи");
+        return pages::Err;
+    }
     QString description = getTaskDescription();
     QString actionPath = getActionPath();
+    if (actionPath == "") {
+        errorMsgBox("Ошибка", "Пустой путь к исполняемому файлу");
+        return pages::Err;
+    }
     QString actionArgs = getActionArgs();
     QDateTime startDateTime = getStartDateTime();
 
@@ -501,7 +517,7 @@ pages::ErrCode pages::addSpecificTimeTask() {
         return pages::Err;
     }
 
-    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME.c_str() ) );
+    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME ) );
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put author info";
@@ -688,8 +704,16 @@ pages::ErrCode pages::addSpecificTimeTask() {
 
 pages::ErrCode pages::addWeeklyTask() {
     QString name = getTaskName();
+    if (name == "") {
+        errorMsgBox("Ошибка", "Пустое имя задачи");
+        return pages::Err;
+    }
     QString description = getTaskDescription();
     QString actionPath = getActionPath();
+    if (actionPath == "") {
+        errorMsgBox("Ошибка", "Пустой путь к исполняемому файлу");
+        return pages::Err;
+    }
     QString actionArgs = getActionArgs();
     QDateTime startDateTime = getStartDateTime();
 
@@ -792,7 +816,7 @@ pages::ErrCode pages::addWeeklyTask() {
         return pages::Err;
     }
 
-    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME.c_str() ));
+    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME ));
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put author info";
@@ -1066,6 +1090,8 @@ void pages::on_weeklyRadioButton_clicked()
 
 void pages::on_chooseFileButton_clicked()
 {
-
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                            tr("Выберите программу"), "\\", tr("Исполняемые файлы (*.exe)"));
+    ui->pathToActionLineEdit->setText(fileName);
 }
 

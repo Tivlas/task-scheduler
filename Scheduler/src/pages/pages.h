@@ -56,7 +56,7 @@ private:
     Ui::pages *ui;
     QString actionPath;
 
-    ErrCode addOnceTask();
+    ErrCode addSpecificTimeTask();
     ErrCode addDailyTask();
     ErrCode addWeeklyTask();
 

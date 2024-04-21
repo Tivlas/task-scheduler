@@ -452,7 +452,7 @@ pages::ErrCode pages::addSpecificTimeTask() {
     std::wstring wdescription = description.toStdWString();
     std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
     std::wstring wdocumentation = L"Задача в конкретное время:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
-                                   + L"Путь к исполняемому файлу: " + wstrExecutablePath;
+                                   + L"\n\nПуть к исполняемому файлу: " + wstrExecutablePath;
     //  ------------------------------------------------------
     //  Create an instance of the Task Service.
     ITaskService *pService = NULL;

@@ -100,6 +100,18 @@ pages::ErrCode pages::addDailyTask() {
     wactionPath += L" " + actionArgs.toStdWString();
     wstrExecutablePath += wactionPath.c_str();
 
+    std::wstring wdescription = description.toStdWString();
+    std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
+    bool ok;
+    auto daysInterval = ui->everyNthDayLineEdit->text().toInt(&ok);
+    if (!ok || daysInterval <= 0) {
+        errorMsgBox("Ошибка", "Вы не ввели/ввели некорректную частоту выполнения задачи.");
+        return pages::Err;
+    }
+
+    std::wstring wdocumentation = L"Ежедневная задача:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
+                                  +  L"\n\nПовторять каждые " +std::to_wstring(daysInterval) + L" дней\n\n" +
+       L"Путь к исполняемому файлу: " + wstrExecutablePath;
     //  ------------------------------------------------------
     //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
@@ -145,13 +157,10 @@ pages::ErrCode pages::addDailyTask() {
     if (SUCCEEDED(hr))
     {
         pExistsTask->Release();
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Внимание", "Задача с таким именем уже существует, хотите ее удалить?");
-        if (reply == QMessageBox::No)
-        {
-            pService->Release();
-            CoUninitialize();
-            return pages::Err;
-        }
+        QMessageBox::information(this, "Внимание", "Задача с таким именем уже существует");
+        pService->Release();
+        CoUninitialize();
+        return pages::Err;
     }
 
     pRootFolder->DeleteTask( _bstr_t( wszTaskName), 0  );
@@ -192,7 +201,16 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    std::wstring wdescription = description.toStdWString();
+    hr = pRegInfo->put_Documentation(_bstr_t(wdocumentation.c_str()));
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot put documentation info";
+        pRootFolder->Release();
+        pTask->Release();
+        CoUninitialize();
+        return pages::Err;
+    }
+
     hr = pRegInfo->put_Description(_bstr_t(wdescription.c_str()) );
     pRegInfo->Release();  // COM clean up.  Pointer is no longer used.
     if( FAILED(hr) )
@@ -252,7 +270,7 @@ pages::ErrCode pages::addDailyTask() {
     //  format should be YYYY-MM-DDTHH:MM:SS(+-)(timezone).
     //  For example, the start boundary below
     //  is January 1st 2005 at 12:05
-    std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
+
     hr = pDailyTrigger->put_StartBoundary( _bstr_t(dateTimeFormatted.c_str()) );
     if( FAILED(hr) )
         qDebug() << "Cannot put start boundary";
@@ -265,12 +283,7 @@ pages::ErrCode pages::addDailyTask() {
 
     //  Define the interval for the daily trigger. An interval of 2 produces an
     //  every other day schedule
-    bool ok;
-    auto daysInterval = ui->everyNthDayLineEdit->text().toInt(&ok);
-    if (!ok || daysInterval <= 0) {
-        errorMsgBox("Ошибка", "Вы не ввели/ввели некорректную частоту выполнения задачи.");
-        return pages::Err;
-    }
+
     hr = pDailyTrigger->put_DaysInterval( static_cast<short>(daysInterval) );
     if( FAILED(hr) )
     {
@@ -400,6 +413,7 @@ pages::ErrCode pages::addDailyTask() {
     pTask->Release();
     pRegisteredTask->Release();
     CoUninitialize();
+    okMsgBox("ОК", "Задача успешно добавлена");
     return pages::Ok;
 }
 
@@ -435,6 +449,10 @@ pages::ErrCode pages::addSpecificTimeTask() {
     wactionPath += L" " + actionArgs.toStdWString();
     wstrExecutablePath += wactionPath.c_str();
 
+    std::wstring wdescription = description.toStdWString();
+    std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
+    std::wstring wdocumentation = L"Задача в конкретное время:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
+                                   + L"Путь к исполняемому файлу: " + wstrExecutablePath;
     //  ------------------------------------------------------
     //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
@@ -480,13 +498,10 @@ pages::ErrCode pages::addSpecificTimeTask() {
     if (SUCCEEDED(hr))
     {
         pExistsTask->Release();
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Внимание", "Задача с таким именем уже существует, хотите ее удалить?");
-        if (reply == QMessageBox::No)
-        {
-            pService->Release();
-            CoUninitialize();
-            return pages::Err;
-        }
+        QMessageBox::information(this, "Внимание", "Задача с таким именем уже существует");
+        pService->Release();
+        CoUninitialize();
+        return pages::Err;
     }
 
     pRootFolder->DeleteTask( _bstr_t( wszTaskName), 0  );
@@ -527,7 +542,16 @@ pages::ErrCode pages::addSpecificTimeTask() {
         return pages::Err;
     }
 
-    std::wstring wdescription = description.toStdWString();
+    hr = pRegInfo->put_Documentation(_bstr_t(wdocumentation.c_str()));
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot put documentation info";
+        pRootFolder->Release();
+        pTask->Release();
+        CoUninitialize();
+        return pages::Err;
+    }
+
     hr = pRegInfo->put_Description(_bstr_t(wdescription.c_str()) );
     pRegInfo->Release();  // COM clean up.  Pointer is no longer used.
     if( FAILED(hr) )
@@ -610,7 +634,7 @@ pages::ErrCode pages::addSpecificTimeTask() {
     //  format should be YYYY-MM-DDTHH:MM:SS(+-)(timezone).
     //  For example, the start boundary below
     //  is January 1st 2005 at 12:05
-    std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
+
     hr = pTimeTrigger->put_StartBoundary( _bstr_t(dateTimeFormatted.c_str()) );
     pTimeTrigger->Release();
     if( FAILED(hr) )
@@ -699,6 +723,7 @@ pages::ErrCode pages::addSpecificTimeTask() {
     pTask->Release();
     pRegisteredTask->Release();
     CoUninitialize();
+    okMsgBox("ОК", "Задача успешно добавлена");
     return pages::Ok;
 }
 
@@ -734,6 +759,52 @@ pages::ErrCode pages::addWeeklyTask() {
     wactionPath += L" " + actionArgs.toStdWString();
     wstrExecutablePath += wactionPath.c_str();
 
+    std::wstring wdescription = description.toStdWString();
+    std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
+    bool ok;
+    auto weeksInterval = ui->everyNthWeekLineEdit->text().toInt(&ok);
+    if (!ok || weeksInterval <= 0) {
+        errorMsgBox("Ошибка", "Вы не ввели/ввели некорректную частоту выполнения задачи.");
+        return pages::Err;
+    }
+    short daysOfWeek = 0;
+    std::wstring daysToRepeat;
+    if (ui->monCheckBox->isChecked()) {
+        daysOfWeek |= MONDAY;
+        daysToRepeat += L"понедельник, ";
+    }
+    if (ui->tueCheckBox->isChecked()) {
+        daysOfWeek |= TUESDAY;
+        daysToRepeat += L"вторник, ";
+    }
+    if (ui->wedCheckBox->isChecked()) {
+        daysOfWeek |= WEDNESDAY;
+        daysToRepeat += L"среду, ";
+    }
+    if (ui->thuCheckBox->isChecked()) {
+        daysOfWeek |= THURSDAY;
+        daysToRepeat += L"четверг, ";
+    }
+    if (ui->friCheckBox->isChecked()) {
+        daysOfWeek |= FRIDAY;
+        daysToRepeat += L"пятницу, ";
+    }
+    if (ui->satCheckBox->isChecked()) {
+        daysOfWeek |= SATURDAY;
+        daysToRepeat += L"субботу, ";
+    }
+    if (ui->sunCheckBox->isChecked()) {
+        daysOfWeek |= SUNDAY;
+        daysToRepeat += L"воскресенье, ";
+    }
+    if (daysOfWeek == 0) {
+        errorMsgBox("Ошибка", "Выберите хотя бы один день для еженедельного триггера");
+        CoUninitialize();
+        return pages::Err;
+    }
+    std::wstring wdocumentation = L"Ежедневная задача:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
+                                  +  L"\n\nПовторять каждые " +std::to_wstring(weeksInterval) + L" недели в " + daysToRepeat + L"\n\n" +
+                                L"Путь к исполняемому файлу: " +  wstrExecutablePath;
     //  ------------------------------------------------------
     //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
@@ -779,13 +850,10 @@ pages::ErrCode pages::addWeeklyTask() {
     if (SUCCEEDED(hr))
     {
         pExistsTask->Release();
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Внимание", "Задача с таким именем уже существует, хотите ее удалить?");
-        if (reply == QMessageBox::No)
-        {
-            pService->Release();
-            CoUninitialize();
-            return pages::Err;
-        }
+        QMessageBox::information(this, "Внимание", "Задача с таким именем уже существует");
+        pService->Release();
+        CoUninitialize();
+        return pages::Err;
     }
 
     pRootFolder->DeleteTask( _bstr_t( wszTaskName), 0  );
@@ -826,7 +894,7 @@ pages::ErrCode pages::addWeeklyTask() {
         return pages::Err;
     }
 
-    std::wstring wdescription = description.toStdWString();
+
     hr = pRegInfo->put_Description(_bstr_t(wdescription.c_str()) );
     pRegInfo->Release();  // COM clean up.  Pointer is no longer used.
     if( FAILED(hr) )
@@ -886,7 +954,7 @@ pages::ErrCode pages::addWeeklyTask() {
     //  format should be YYYY-MM-DDTHH:MM:SS(+-)(timezone).
     //  For example, the start boundary below
     //  is January 1st 2005 at 12:05
-    std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
+
     hr = pWeeklyTrigger->put_StartBoundary( _bstr_t(dateTimeFormatted.c_str()) );
     if( FAILED(hr) )
         qDebug() << "Cannot put start boundary";
@@ -899,12 +967,7 @@ pages::ErrCode pages::addWeeklyTask() {
 
     //  Define the interval for the daily trigger. An interval of 2 produces an
     //  every other day schedule
-    bool ok;
-    auto weeksInterval = ui->everyNthWeekLineEdit->text().toInt(&ok);
-    if (!ok || weeksInterval <= 0) {
-        errorMsgBox("Ошибка", "Вы не ввели/ввели некорректную частоту выполнения задачи.");
-        return pages::Err;
-    }
+
     hr = pWeeklyTrigger->put_WeeksInterval( static_cast<short>(weeksInterval) );
     if( FAILED(hr) )
     {
@@ -916,35 +979,7 @@ pages::ErrCode pages::addWeeklyTask() {
         return pages::Err;
     }
 
-    short daysOfWeek = 0;
-    if (ui->monCheckBox->isChecked()) {
-        daysOfWeek |= MONDAY;
-    }
-    if (ui->tueCheckBox->isChecked()) {
-        daysOfWeek |= TUESDAY;
-    }
-    if (ui->wedCheckBox->isChecked()) {
-        daysOfWeek |= WEDNESDAY;
-    }
-    if (ui->thuCheckBox->isChecked()) {
-        daysOfWeek |= THURSDAY;
-    }
-    if (ui->friCheckBox->isChecked()) {
-        daysOfWeek |= FRIDAY;
-    }
-    if (ui->satCheckBox->isChecked()) {
-        daysOfWeek |= SATURDAY;
-    }
-    if (ui->sunCheckBox->isChecked()) {
-        daysOfWeek |= SUNDAY;
-    }
-    if (daysOfWeek == 0) {
-        errorMsgBox("Ошибка", "Выберите хотя бы один день для еженедельного триггера");
-        pRootFolder->Release();
-        pTask->Release();
-        CoUninitialize();
-        return pages::Err;
-    }
+
     hr = pWeeklyTrigger->put_DaysOfWeek( daysOfWeek );    // Runs on Monday
     pWeeklyTrigger->Release();
     if( FAILED(hr) )
@@ -1037,6 +1072,7 @@ pages::ErrCode pages::addWeeklyTask() {
     pTask->Release();
     pRegisteredTask->Release();
     CoUninitialize();
+    okMsgBox("ОК", "Задача успешно добавлена");
     return pages::Ok;
 }
 
@@ -1092,6 +1128,7 @@ void pages::on_chooseFileButton_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                             tr("Выберите программу"), "\\", tr("Исполняемые файлы (*.exe)"));
+    fileName = QDir::toNativeSeparators(fileName);
     ui->pathToActionLineEdit->setText(fileName);
 }
 

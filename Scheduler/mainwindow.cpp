@@ -168,3 +168,116 @@ void MainWindow::on_refreshButton_clicked()
     showTasks();
 }
 
+
+void MainWindow::on_taskListWidget_itemClicked(QListWidgetItem *item)
+{
+    QString text;
+    QString name = item->text();
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    if( FAILED(hr) )
+    {
+        qDebug() << "CoInitializeEx failed";
+        return;
+    }
+
+    //  ------------------------------------------------------
+    //  Create a name for the task.
+    auto wname = name.toStdWString();
+    LPCWSTR wszTaskName = wname.c_str();
+
+    //  ------------------------------------------------------
+    //  Create an instance of the Task Service.
+    ITaskService *pService = NULL;
+    hr = CoCreateInstance( CLSID_TaskScheduler,
+                          NULL,
+                          CLSCTX_INPROC_SERVER,
+                          IID_ITaskService,
+                          (void**)&pService );
+    if (FAILED(hr))
+    {
+        qDebug() << "Failed to create an instance of ITaskService";
+        CoUninitialize();
+        return;
+    }
+
+    //  Connect to the task service.
+    hr = pService->Connect(_variant_t(), _variant_t(),
+                           _variant_t(), _variant_t());
+    if( FAILED(hr) )
+    {
+        qDebug() << "ITaskService::Connect failed";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    //  ------------------------------------------------------
+    //  Get the pointer to the root task folder.  This folder will hold the
+    //  new task that is registered.
+    ITaskFolder *pRootFolder = NULL;
+    hr = pService->GetFolder( _bstr_t( L"\\") , &pRootFolder );
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot get Root Folder pointer";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    // If the same task exists, remove it.
+    IRegisteredTask *pRegisteredTask = NULL;
+    hr = pRootFolder->GetTask(_bstr_t( wszTaskName), &pRegisteredTask);
+    if (FAILED(hr))
+    {
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    ITaskDefinition *pTaskDef = NULL;
+    hr = pRegisteredTask->get_Definition(&pTaskDef);
+    if (SUCCEEDED(hr))
+    {
+        IRegistrationInfo *pRegInfo = NULL;
+        hr = pTaskDef->get_RegistrationInfo(&pRegInfo);
+        if (SUCCEEDED(hr))
+        {
+            BSTR docs = NULL;
+            hr = pRegInfo->get_Documentation(&docs);
+            if (SUCCEEDED(hr))
+            {
+                text += QString::fromWCharArray(docs) + "\n\n";
+                SysFreeString(docs);
+            }
+            else
+            {
+                qDebug() << "Cannot get the registered task docs";
+            }
+            pRegInfo->Release();
+        }
+        else
+        {
+            qDebug() << "Cannot get the registered task registration info";
+        }
+        pTaskDef->Release();
+    }
+
+    ui->taskInfoTextEdit->setText(text);
+    pRootFolder->Release();
+    pRegisteredTask->Release();
+    pService->Release();
+    CoUninitialize();
+}
+
+
+void MainWindow::on_runTaskButton_clicked()
+{
+
+}
+
+
+void MainWindow::on_deleteTaskButton_clicked()
+{
+
+}
+

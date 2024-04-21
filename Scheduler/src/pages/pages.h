@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <windows.h>
+#include <QDir>
 #include <comdef.h>
 #include <wincred.h>
 #include <taskschd.h>

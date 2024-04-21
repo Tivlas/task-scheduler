@@ -104,6 +104,10 @@ void MainWindow::showTasks() {
 
     LONG numTasks = 0;
     hr = pTaskCollection->get_Count(&numTasks);
+    if (FAILED(hr)) {
+        qDebug() << "Cannot get task count";
+        return;
+    }
 
     if( numTasks == 0 )
     {
@@ -124,19 +128,53 @@ void MainWindow::showTasks() {
             hr = pRegisteredTask->get_Name(&taskName);
             if( SUCCEEDED(hr) )
             {
-                QString name = QString::fromWCharArray(taskName);
-                ui->taskListWidget->addItem(name);
+                ITaskDefinition *pTaskDef = NULL;
+                hr = pRegisteredTask->get_Definition(&pTaskDef);
+                if (SUCCEEDED(hr))
+                {
+                    IRegistrationInfo *pRegInfo = NULL;
+                    hr = pTaskDef->get_RegistrationInfo(&pRegInfo);
+                    if (SUCCEEDED(hr))
+                    {
+                        BSTR author = NULL;
+                        hr = pRegInfo->get_Author(&author);
+                        if (SUCCEEDED(hr))
+                        {
+                            QString authorStr = QString::fromWCharArray(author);
+                            if (authorStr.toStdWString() == AUTHOR_NAME)
+                            {
+                                QString name = QString::fromWCharArray(taskName);
+                                ui->taskListWidget->addItem(name);
+                            }
+                            SysFreeString(author);
+                        }
+                        else
+                        {
+                            qDebug() << "Cannot get the registered task author";
+                        }
+                        pRegInfo->Release();
+                    }
+                    else
+                    {
+                        qDebug() << "Cannot get the registered task registration info";
+                    }
+                    pTaskDef->Release();
+                }
+                else
+                {
+                    qDebug() << "Cannot get the registered task definition";
+                }
                 SysFreeString(taskName);
             }
             else
             {
-                qDebug() << "\nCannot get the registered task name";
+                qDebug() << "Cannot get the registered task name";
             }
             pRegisteredTask->Release();
         }
         else
         {
-            qDebug() << "\nCannot get the registered task item at index";
+            qDebug() << "Cannot get the registered task item at index";
         }
     }
 

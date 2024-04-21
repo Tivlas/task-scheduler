@@ -174,7 +174,7 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    hr = pRegInfo->put_Author( _bstr_t(L"DEFAULT") );
+    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME.c_str() ) );
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put author info";
@@ -501,15 +501,15 @@ pages::ErrCode pages::addSpecificTimeTask() {
         return pages::Err;
     }
 
-    // hr = pRegInfo->put_Author( _bstr_t(L"DEFAULT") );
-    // if( FAILED(hr) )
-    // {
-    //     qDebug() << "Cannot put author info";
-    //     pRootFolder->Release();
-    //     pTask->Release();
-    //     CoUninitialize();
-    //     return pages::Err;
-    // }
+    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME.c_str() ) );
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot put author info";
+        pRootFolder->Release();
+        pTask->Release();
+        CoUninitialize();
+        return pages::Err;
+    }
 
     std::wstring wdescription = description.toStdWString();
     hr = pRegInfo->put_Description(_bstr_t(wdescription.c_str()) );
@@ -792,7 +792,7 @@ pages::ErrCode pages::addWeeklyTask() {
         return pages::Err;
     }
 
-    hr = pRegInfo->put_Author( _bstr_t(L"DEFAULT") );
+    hr = pRegInfo->put_Author( _bstr_t(AUTHOR_NAME.c_str() ));
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put author info";

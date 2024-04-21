@@ -20,6 +20,8 @@
 #define FRIDAY 32
 #define SATURDAY 64
 
+std::wstring AUTHOR_NAME = L"CUSTOM_AUTHOR";
+
 namespace Ui {
 class pages;
 }

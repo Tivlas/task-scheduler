@@ -93,10 +93,9 @@ pages::ErrCode pages::addDailyTask() {
     auto wname = name.toStdWString();
     LPCWSTR wszTaskName = wname.c_str();
 
-    std::wstring wstrExecutablePath = L"";
-    auto wactionPath = actionPath.toStdWString();
-    wactionPath += L" " + actionArgs.toStdWString();
-    wstrExecutablePath += wactionPath.c_str();
+
+    std::wstring wactionPath = actionPath.toStdWString();
+    std::wstring wactionArgs = actionArgs.toStdWString();
 
     std::wstring wdescription = description.toStdWString();
     std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
@@ -109,7 +108,7 @@ pages::ErrCode pages::addDailyTask() {
 
     std::wstring wdocumentation = L"Ежедневная задача:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
                                   +  L"\n\nПовторять каждые " +std::to_wstring(daysInterval) + L" дней\n" +
-       L"\nПуть к исполняемому файлу: " + wstrExecutablePath;
+       L"\nПуть к исполняемому файлу: " + wactionPath + L"\nАргументы: " + wactionArgs;
 
     ITaskService *pService = NULL;
     hr = CoCreateInstance( CLSID_TaskScheduler,
@@ -361,11 +360,21 @@ pages::ErrCode pages::addDailyTask() {
     }
 
     //  Set the path of the executable to notepad.exe.
-    hr = pExecAction->put_Path( _bstr_t( wstrExecutablePath.c_str() ) );
+    hr = pExecAction->put_Path( _bstr_t( wactionPath.c_str() ) );
     pExecAction->Release();
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put the executable path";
+        pRootFolder->Release();
+        pTask->Release();
+        CoUninitialize();
+        return pages::Err;
+    }
+
+    hr = pExecAction->put_Arguments(_bstr_t( wactionArgs.c_str() ));
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot put the args to exe";
         pRootFolder->Release();
         pTask->Release();
         CoUninitialize();
@@ -431,15 +440,13 @@ pages::ErrCode pages::addSpecificTimeTask() {
     auto wname = name.toStdWString();
     LPCWSTR wszTaskName = wname.c_str();
 
-    std::wstring wstrExecutablePath = L"";
-    auto wactionPath = actionPath.toStdWString();
-    wactionPath += L" " + actionArgs.toStdWString();
-    wstrExecutablePath += wactionPath.c_str();
+    std::wstring wactionPath = actionPath.toStdWString();
+    std::wstring wactionArgs = actionArgs.toStdWString();
 
     std::wstring wdescription = description.toStdWString();
     std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
     std::wstring wdocumentation = L"Задача в конкретное время:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
-                                   + L"\n\nПуть к исполняемому файлу: " + wstrExecutablePath;
+                                   + L"\n\nПуть к исполняемому файлу: " + wactionPath + L"\nАргументы: " + wactionArgs;
     //  ------------------------------------------------------
     //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
@@ -671,11 +678,21 @@ pages::ErrCode pages::addSpecificTimeTask() {
     }
 
     //  Set the path of the executable to notepad.exe.
-    hr = pExecAction->put_Path( _bstr_t( wstrExecutablePath.c_str() ) );
+    hr = pExecAction->put_Path( _bstr_t( wactionPath.c_str() ) );
     pExecAction->Release();
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put the executable path";
+        pRootFolder->Release();
+        pTask->Release();
+        CoUninitialize();
+        return pages::Err;
+    }
+
+    hr = pExecAction->put_Arguments(_bstr_t( wactionArgs.c_str() ));
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot put the args to exe";
         pRootFolder->Release();
         pTask->Release();
         CoUninitialize();
@@ -741,10 +758,8 @@ pages::ErrCode pages::addWeeklyTask() {
     auto wname = name.toStdWString();
     LPCWSTR wszTaskName = wname.c_str();
 
-    std::wstring wstrExecutablePath = L"";
     auto wactionPath = actionPath.toStdWString();
-    wactionPath += L" " + actionArgs.toStdWString();
-    wstrExecutablePath += wactionPath.c_str();
+    auto wactionArgs = actionArgs.toStdWString();
 
     std::wstring wdescription = description.toStdWString();
     std::wstring dateTimeFormatted = startDateTime.toString("yyyy-MM-dd'T'hh:mm:ss").toStdWString();
@@ -791,7 +806,7 @@ pages::ErrCode pages::addWeeklyTask() {
     }
     std::wstring wdocumentation = L"Ежедневная задача:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
                                   +  L"\n\nПовторять каждые " +std::to_wstring(weeksInterval) + L" недели в " + daysToRepeat + L"\n" +
-                                L"\nПуть к исполняемому файлу: " +  wstrExecutablePath;
+                                L"\nПуть к исполняемому файлу: " +  wactionPath + L"\nАргументы: " + wactionArgs;
     //  ------------------------------------------------------
     //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
@@ -1020,11 +1035,21 @@ pages::ErrCode pages::addWeeklyTask() {
     }
 
     //  Set the path of the executable to notepad.exe.
-    hr = pExecAction->put_Path( _bstr_t( wstrExecutablePath.c_str() ) );
+    hr = pExecAction->put_Path( _bstr_t( wactionPath.c_str() ) );
     pExecAction->Release();
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put the executable path";
+        pRootFolder->Release();
+        pTask->Release();
+        CoUninitialize();
+        return pages::Err;
+    }
+
+    hr = pExecAction->put_Arguments(_bstr_t( wactionArgs.c_str() ));
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot put the args to exe";
         pRootFolder->Release();
         pTask->Release();
         CoUninitialize();

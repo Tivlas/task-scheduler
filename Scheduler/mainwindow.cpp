@@ -21,9 +21,11 @@ void MainWindow::on_createButton_clicked()
     delete taskCreationPages;
     taskCreationPages = new pages();
     taskCreationPages->exec();
+    showTasks();
 }
 
 void MainWindow::showTasks() {
+    ui->taskListWidget->clear();
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     if( FAILED(hr) )
     {
@@ -432,6 +434,7 @@ void MainWindow::on_deleteTaskButton_clicked()
     pRootFolder->Release();
     pService->Release();
     CoUninitialize();
+    showTasks();
 }
 
 
@@ -530,6 +533,7 @@ void MainWindow::on_stopTaskButton_clicked()
     pRootFolder->Release();
     pService->Release();
     CoUninitialize();
+    QMessageBox::information(this, "Успех", "Задача остановлена");
     return;
 }
 

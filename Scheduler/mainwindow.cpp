@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     showTasks();
+    this->setWindowTitle("Планировщик задач");
 }
 
 MainWindow::~MainWindow()

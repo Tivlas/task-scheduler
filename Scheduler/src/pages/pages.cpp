@@ -11,6 +11,7 @@ pages::pages(QWidget *parent)
     ui->onceRadioButton->click();
     ui->createPages->setCurrentIndex(0);
     ui->startTimeEdit->setMinimumDateTime(QDateTime::currentDateTime());
+    this->setWindowTitle("Создание задачи");
 }
 
 pages::~pages()

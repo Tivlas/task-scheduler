@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow), taskCreationPages(new pages())
 {
     ui->setupUi(this);
-    this->showTasks();
+    showTasks();
 }
 
 MainWindow::~MainWindow()
@@ -230,6 +230,7 @@ void MainWindow::on_taskListWidget_itemClicked(QListWidgetItem *item)
     if (FAILED(hr))
     {
         pService->Release();
+        pRootFolder->Release();
         CoUninitialize();
         return;
     }
@@ -285,12 +286,8 @@ void MainWindow::on_runTaskButton_clicked()
         return;
     }
 
-    //  ------------------------------------------------------
-    //  Create a name for the task.
     auto wname = name.toStdWString();
     LPCWSTR wszTaskName = wname.c_str();
-    //  ------------------------------------------------------
-    //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
     hr = CoCreateInstance( CLSID_TaskScheduler,
                           NULL,
@@ -304,7 +301,6 @@ void MainWindow::on_runTaskButton_clicked()
         return;
     }
 
-    //  Connect to the task service.
     hr = pService->Connect(_variant_t(), _variant_t(),
                            _variant_t(), _variant_t());
     if( FAILED(hr) )
@@ -315,9 +311,6 @@ void MainWindow::on_runTaskButton_clicked()
         return;
     }
 
-    //  ------------------------------------------------------
-    //  Get the pointer to the root task folder.  This folder will hold the
-    //  new task that is registered.
     ITaskFolder *pRootFolder = NULL;
     hr = pService->GetFolder( _bstr_t( L"\\") , &pRootFolder );
     if( FAILED(hr) )
@@ -333,6 +326,27 @@ void MainWindow::on_runTaskButton_clicked()
     hr = pRootFolder->GetTask(_bstr_t( wszTaskName), &pRegTask);
     if (FAILED(hr))
     {
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    VARIANT_BOOL enabled;
+    hr = pRegTask->get_Enabled(&enabled);
+    if (FAILED(hr))
+    {
+        pRegTask->Release();
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    if (enabled == VARIANT_FALSE) {
+        QMessageBox::information(this, "Ошибка", "Задача выключена");
+        pRegTask->Release();
+        pRootFolder->Release();
         pService->Release();
         CoUninitialize();
         return;
@@ -342,14 +356,17 @@ void MainWindow::on_runTaskButton_clicked()
     if (FAILED(hr))
     {
         pRegTask->Release();
+        pRootFolder->Release();
         pService->Release();
         CoUninitialize();
         return;
     }
 
     pRegTask->Release();
+    pRootFolder->Release();
     pService->Release();
     CoUninitialize();
+    return;
 }
 
 
@@ -368,12 +385,8 @@ void MainWindow::on_deleteTaskButton_clicked()
         return;
     }
 
-    //  ------------------------------------------------------
-    //  Create a name for the task.
     auto wname = name.toStdWString();
     LPCWSTR wszTaskName = wname.c_str();
-    //  ------------------------------------------------------
-    //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
     hr = CoCreateInstance( CLSID_TaskScheduler,
                           NULL,
@@ -387,7 +400,6 @@ void MainWindow::on_deleteTaskButton_clicked()
         return;
     }
 
-    //  Connect to the task service.
     hr = pService->Connect(_variant_t(), _variant_t(),
                            _variant_t(), _variant_t());
     if( FAILED(hr) )
@@ -398,9 +410,6 @@ void MainWindow::on_deleteTaskButton_clicked()
         return;
     }
 
-    //  ------------------------------------------------------
-    //  Get the pointer to the root task folder.  This folder will hold the
-    //  new task that is registered.
     ITaskFolder *pRootFolder = NULL;
     hr = pService->GetFolder( _bstr_t( L"\\") , &pRootFolder );
     if( FAILED(hr) )
@@ -414,13 +423,274 @@ void MainWindow::on_deleteTaskButton_clicked()
     hr = pRootFolder->DeleteTask( _bstr_t( wszTaskName), 0  );
     if( FAILED(hr) )
     {
-        qDebug() << "Cannot get Root Folder pointer";
+        pRootFolder->Release();
         pService->Release();
         CoUninitialize();
+        return;
         return;
     }
     pRootFolder->Release();
     pService->Release();
     CoUninitialize();
+}
+
+
+void MainWindow::on_stopTaskButton_clicked()
+{
+    if (ui->taskListWidget->currentItem() == nullptr) {
+        QMessageBox::critical(this, "Ошибка", "Выберите задачу");
+        return;
+    }
+
+    QString name = ui->taskListWidget->currentItem()->text();
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    if( FAILED(hr) )
+    {
+        qDebug() << "CoInitializeEx failed";
+        return;
+    }
+
+    auto wname = name.toStdWString();
+    LPCWSTR wszTaskName = wname.c_str();
+    ITaskService *pService = NULL;
+    hr = CoCreateInstance( CLSID_TaskScheduler,
+                          NULL,
+                          CLSCTX_INPROC_SERVER,
+                          IID_ITaskService,
+                          (void**)&pService );
+    if (FAILED(hr))
+    {
+        qDebug() << "Failed to create an instance of ITaskService";
+        CoUninitialize();
+        return;
+    }
+
+    hr = pService->Connect(_variant_t(), _variant_t(),
+                           _variant_t(), _variant_t());
+    if( FAILED(hr) )
+    {
+        qDebug() << "ITaskService::Connect failed";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    ITaskFolder *pRootFolder = NULL;
+    hr = pService->GetFolder( _bstr_t( L"\\") , &pRootFolder );
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot get Root Folder pointer";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+
+    IRegisteredTask *pRegTask = NULL;
+    hr = pRootFolder->GetTask(_bstr_t( wszTaskName), &pRegTask);
+    if (FAILED(hr))
+    {
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    VARIANT_BOOL enabled;
+    hr = pRegTask->get_Enabled(&enabled);
+    if (FAILED(hr))
+    {
+        pRegTask->Release();
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    if (enabled == VARIANT_FALSE) {
+        QMessageBox::information(this, "Ошибка", "Задача выключена");
+        pRegTask->Release();
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    hr = pRegTask->Stop(_variant_t());
+    if (FAILED(hr))
+    {
+        pRegTask->Release();
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    pRegTask->Release();
+    pRootFolder->Release();
+    pService->Release();
+    CoUninitialize();
+    return;
+}
+
+
+void MainWindow::on_disableTaskButton_clicked()
+{
+    if (ui->taskListWidget->currentItem() == nullptr) {
+        QMessageBox::critical(this, "Ошибка", "Выберите задачу");
+        return;
+    }
+
+    QString name = ui->taskListWidget->currentItem()->text();
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    if( FAILED(hr) )
+    {
+        qDebug() << "CoInitializeEx failed";
+        return;
+    }
+
+    auto wname = name.toStdWString();
+    LPCWSTR wszTaskName = wname.c_str();
+    ITaskService *pService = NULL;
+    hr = CoCreateInstance( CLSID_TaskScheduler,
+                          NULL,
+                          CLSCTX_INPROC_SERVER,
+                          IID_ITaskService,
+                          (void**)&pService );
+    if (FAILED(hr))
+    {
+        qDebug() << "Failed to create an instance of ITaskService";
+        CoUninitialize();
+        return;
+    }
+
+    hr = pService->Connect(_variant_t(), _variant_t(),
+                           _variant_t(), _variant_t());
+    if( FAILED(hr) )
+    {
+        qDebug() << "ITaskService::Connect failed";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    ITaskFolder *pRootFolder = NULL;
+    hr = pService->GetFolder( _bstr_t( L"\\") , &pRootFolder );
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot get Root Folder pointer";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+
+    IRegisteredTask *pRegTask = NULL;
+    hr = pRootFolder->GetTask(_bstr_t( wszTaskName), &pRegTask);
+    if (FAILED(hr))
+    {
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    hr = pRegTask->put_Enabled(VARIANT_FALSE);
+    if (FAILED(hr))
+    {
+        pRegTask->Release();
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    pRegTask->Release();
+    pRootFolder->Release();
+    pService->Release();
+    CoUninitialize();
+    QMessageBox::information(this, "Ошибка", "Задача выключена");
+    return;
+}
+
+
+void MainWindow::on_enableTaskButton_clicked()
+{
+    if (ui->taskListWidget->currentItem() == nullptr) {
+        QMessageBox::critical(this, "Ошибка", "Выберите задачу");
+        return;
+    }
+
+    QString name = ui->taskListWidget->currentItem()->text();
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    if( FAILED(hr) )
+    {
+        qDebug() << "CoInitializeEx failed";
+        return;
+    }
+
+    auto wname = name.toStdWString();
+    LPCWSTR wszTaskName = wname.c_str();
+    ITaskService *pService = NULL;
+    hr = CoCreateInstance( CLSID_TaskScheduler,
+                          NULL,
+                          CLSCTX_INPROC_SERVER,
+                          IID_ITaskService,
+                          (void**)&pService );
+    if (FAILED(hr))
+    {
+        qDebug() << "Failed to create an instance of ITaskService";
+        CoUninitialize();
+        return;
+    }
+
+    hr = pService->Connect(_variant_t(), _variant_t(),
+                           _variant_t(), _variant_t());
+    if( FAILED(hr) )
+    {
+        qDebug() << "ITaskService::Connect failed";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    ITaskFolder *pRootFolder = NULL;
+    hr = pService->GetFolder( _bstr_t( L"\\") , &pRootFolder );
+    if( FAILED(hr) )
+    {
+        qDebug() << "Cannot get Root Folder pointer";
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+
+    IRegisteredTask *pRegTask = NULL;
+    hr = pRootFolder->GetTask(_bstr_t( wszTaskName), &pRegTask);
+    if (FAILED(hr))
+    {
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    hr = pRegTask->put_Enabled(VARIANT_TRUE);
+    if (FAILED(hr))
+    {
+        pRegTask->Release();
+        pRootFolder->Release();
+        pService->Release();
+        CoUninitialize();
+        return;
+    }
+
+    pRegTask->Release();
+    pRootFolder->Release();
+    pService->Release();
+    CoUninitialize();
+
+    QMessageBox::information(this, "Ошибка", "Задача включена");
+    return;
 }
 

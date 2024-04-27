@@ -32,7 +32,7 @@
         <item>
          <widget class="QPushButton" name="refreshButton">
           <property name="text">
-           <string>Обновить</string>
+           <string>Обновить список</string>
           </property>
          </widget>
         </item>
@@ -47,6 +47,27 @@
          <widget class="QPushButton" name="runTaskButton">
           <property name="text">
            <string>Запустить</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="stopTaskButton">
+          <property name="text">
+           <string>Остановить</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="disableTaskButton">
+          <property name="text">
+           <string>Выключить</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="enableTaskButton">
+          <property name="text">
+           <string>Включить</string>
           </property>
          </widget>
         </item>

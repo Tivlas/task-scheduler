@@ -30,6 +30,12 @@ private slots:
 
     void on_deleteTaskButton_clicked();
 
+    void on_stopTaskButton_clicked();
+
+    void on_disableTaskButton_clicked();
+
+    void on_enableTaskButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     pages* taskCreationPages;

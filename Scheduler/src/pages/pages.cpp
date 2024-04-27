@@ -90,8 +90,6 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    //  ------------------------------------------------------
-    //  Create a name for the task.
     auto wname = name.toStdWString();
     LPCWSTR wszTaskName = wname.c_str();
 
@@ -110,10 +108,9 @@ pages::ErrCode pages::addDailyTask() {
     }
 
     std::wstring wdocumentation = L"Ежедневная задача:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
-                                  +  L"\n\nПовторять каждые " +std::to_wstring(daysInterval) + L" дней\n\n" +
-       L"Путь к исполняемому файлу: " + wstrExecutablePath;
-    //  ------------------------------------------------------
-    //  Create an instance of the Task Service.
+                                  +  L"\n\nПовторять каждые " +std::to_wstring(daysInterval) + L" дней\n" +
+       L"\nПуть к исполняемому файлу: " + wstrExecutablePath;
+
     ITaskService *pService = NULL;
     hr = CoCreateInstance( CLSID_TaskScheduler,
                           NULL,
@@ -127,7 +124,6 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    //  Connect to the task service.
     hr = pService->Connect(_variant_t(), _variant_t(),
                            _variant_t(), _variant_t());
     if( FAILED(hr) )
@@ -138,9 +134,6 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    //  ------------------------------------------------------
-    //  Get the pointer to the root task folder.  This folder will hold the
-    //  new task that is registered.
     ITaskFolder *pRootFolder = NULL;
     hr = pService->GetFolder( _bstr_t( L"\\") , &pRootFolder );
     if( FAILED(hr) )
@@ -151,7 +144,6 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    // If the same task exists, remove it.
     IRegisteredTask *pExistsTask = NULL;
     hr = pRootFolder->GetTask(_bstr_t( wszTaskName), &pExistsTask);
     if (SUCCEEDED(hr))
@@ -165,11 +157,10 @@ pages::ErrCode pages::addDailyTask() {
 
     pRootFolder->DeleteTask( _bstr_t( wszTaskName), 0  );
 
-    //  Create the task builder object to create the task.
     ITaskDefinition *pTask = NULL;
     hr = pService->NewTask( 0, &pTask );
 
-    pService->Release();  // COM clean up.  Pointer is no longer used.
+    pService->Release();
     if (FAILED(hr))
     {
         qDebug() << "Failed to CoCreate an instance of the TaskService class";
@@ -178,8 +169,6 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    //  ------------------------------------------------------
-    //  Get the registration info for setting the identification.
     IRegistrationInfo *pRegInfo= NULL;
     hr = pTask->get_RegistrationInfo( &pRegInfo );
     if( FAILED(hr) )
@@ -212,7 +201,7 @@ pages::ErrCode pages::addDailyTask() {
     }
 
     hr = pRegInfo->put_Description(_bstr_t(wdescription.c_str()) );
-    pRegInfo->Release();  // COM clean up.  Pointer is no longer used.
+    pRegInfo->Release();
     if( FAILED(hr) )
     {
         qDebug() << "Cannot put description info";
@@ -222,8 +211,7 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    //  ------------------------------------------------------
-    //  Get the trigger collection to insert the daily trigger.
+
     ITriggerCollection *pTriggerCollection = NULL;
     hr = pTask->get_Triggers( &pTriggerCollection );
     if( FAILED(hr) )
@@ -235,7 +223,6 @@ pages::ErrCode pages::addDailyTask() {
         return pages::Err;
     }
 
-    //  Add the daily trigger to the task.
     ITrigger *pTrigger = NULL;
     hr = pTriggerCollection->Create( TASK_TRIGGER_DAILY, &pTrigger );
     pTriggerCollection->Release();
@@ -803,8 +790,8 @@ pages::ErrCode pages::addWeeklyTask() {
         return pages::Err;
     }
     std::wstring wdocumentation = L"Ежедневная задача:\nИмя: " + wname + L"\n\nОписание: " + wdescription + L"\n\nДата: " + dateTimeFormatted
-                                  +  L"\n\nПовторять каждые " +std::to_wstring(weeksInterval) + L" недели в " + daysToRepeat + L"\n\n" +
-                                L"Путь к исполняемому файлу: " +  wstrExecutablePath;
+                                  +  L"\n\nПовторять каждые " +std::to_wstring(weeksInterval) + L" недели в " + daysToRepeat + L"\n" +
+                                L"\nПуть к исполняемому файлу: " +  wstrExecutablePath;
     //  ------------------------------------------------------
     //  Create an instance of the Task Service.
     ITaskService *pService = NULL;
